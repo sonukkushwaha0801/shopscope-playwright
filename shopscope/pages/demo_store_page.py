@@ -10,7 +10,7 @@ class DemoStorePage:
         self.page = page
         self.search_input = page.get_by_role("searchbox", name="Search products")
         self.search_button = page.get_by_role("button", name="Search")
-        self.product_cards = page.get_by_test_id("product-card")
+        self.product_cards = page.locator('[data-testid="product-card"]:not([hidden])')
         self.cart_count = page.get_by_test_id("cart-count")
         self.status_message = page.get_by_role("status")
 
