@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shopscope-playwright"
+version = "0.1.0"
+description = "Reusable Python Playwright framework for authorized e-commerce UI automation."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "ShopScope Contributors" }]
+dependencies = [
+  "playwright>=1.52,<2.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.3,<9.0",
+  "pytest-html>=4.1,<5.0",
+]
+dev = [
+  "ruff>=0.11,<1.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["shopscope*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+  "e2e: browser-based end-to-end tests",
+  "unit: fast tests without a browser",
+]
+log_cli = true
+log_cli_level = "INFO"
+log_format = "%(asctime)s %(levelname)s %(name)s: %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["shopscope", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
