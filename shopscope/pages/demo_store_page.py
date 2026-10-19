@@ -29,6 +29,10 @@ class DemoStorePage:
     def add_product_to_cart(self, name: str) -> None:
         self.product(name).get_by_role("button", name="Add to cart").click()
 
+    def expect_title(self, title: str) -> None:
+        """Assert the current page title using a web-first assertion."""
+        expect(self.page).to_have_title(title)
+
     def expect_product_visible(self, name: str) -> None:
         expect(self.product(name)).to_be_visible()
 
