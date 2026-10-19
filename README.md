@@ -2,97 +2,75 @@
 
 **Explore. Automate. Analyze.**
 
-A reusable Python Playwright framework for e-commerce UI automation, multi-retailer testing, and future price-tracking integrations for Amazon India and Flipkart.
+A reusable Python Playwright framework for e-commerce UI automation, with a deterministic local demo storefront, a provider interface for future approved integrations, and a price-comparison service.
 
-> **Project status:** Planning and foundation. Retailer-specific live-site automation and price monitoring are not part of the initial implementation.
+**Status:** The initial framework foundation is implemented. No live Amazon India or Flipkart automation is implemented.
 
-## Goals
+## Included
 
-- Build a maintainable, reusable UI automation framework with Python, Playwright, and pytest.
-- Separate shared test infrastructure from retailer-specific page objects and workflows.
-- Make configuration, browser lifecycle, reporting, logging, and failure artifacts consistent.
-- Keep any future price-tracking capability behind a provider interface so it can evolve independently of UI tests.
-- Add CI and container support after the local test foundation is stable.
+- Environment-based settings and validation.
+- pytest fixtures for browser, isolated contexts, and pages.
+- Page-object pattern and a bundled local storefront.
+- Unit and end-to-end tests.
+- Failure screenshots and Playwright trace capture.
+- Normalized offer model and provider protocol for approved data sources.
+- Decimal-based price comparison logic.
+- GitHub Actions matrix for Python 3.12, 3.13, and 3.14, plus Ruff linting.
 
-## Initial scope
+## Windows setup (VS Code / PowerShell)
 
-The first implementation will focus on framework fundamentals and deterministic tests against a controlled or explicitly authorized test application:
+Run these commands from the cloned repository directory:
 
-- Typed, centralized configuration and environment-specific settings.
-- pytest fixtures for Playwright, browser contexts, pages, and cleanup.
-- Page-object and component patterns with explicit, robust locators.
-- Reusable assertions and test data.
-- Screenshots, traces, logs, and test reports on failure.
-- A retailer-adapter boundary for future authorized integrations.
-- Later milestones for GitHub Actions and Docker.
-
-## Retailer and data-use boundaries
-
-Amazon India and Flipkart are the intended learning context, but their live sites are not assumed to be authorized automation targets. Before building retailer-specific automation or collecting prices, verify the applicable terms and use an approved API, licensed data source, or explicit permission where required.
-
-This project will not implement CAPTCHA evasion, stealth techniques, access-control circumvention, or rate-limit bypasses. It will not make real purchases. Checkout-related testing, if ever added, must use a controlled environment and test data.
-
-A future price tracker should consume a documented provider interface rather than depend on selectors embedded in the core framework.
-
-## Proposed architecture
-
-The structure below is a target direction, not a claim that these modules already exist.
-
-```text
-shopscope-playwright/
-├── config/
-│   └── settings.py          # Centralized configuration
-├── shopscope/
-│   ├── core/                # Browser and shared framework services
-│   ├── pages/               # Reusable page abstractions
-│   ├── components/          # Reusable UI components
-│   ├── adapters/            # Separate, authorized site integrations
-│   └── tracking/            # Future provider-based price tracking
-├── tests/
-│   ├── unit/
-│   └── e2e/
-├── test-data/
-├── reports/                 # Generated locally; do not commit artifacts
-├── conftest.py
-├── pytest.ini
-├── pyproject.toml
-├── .env.example
-├── .gitignore
-└── README.md
+```powershell
+py -3.14 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e ".[test,dev]"
+python -m playwright install chromium
 ```
 
-We will introduce folders only when there is a real need for them; the design should not become abstraction-heavy before the first tests work.
+If PowerShell blocks activation, use the virtual environment interpreter directly instead of changing execution policy:
 
-## Milestones
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[test,dev]"
+.\.venv\Scripts\python.exe -m playwright install chromium
+```
 
-- [ ] **M0 — Define the foundation:** confirm local OS and Python environment; establish project conventions.
-- [ ] **M1 — Bootstrap:** create the package, dependency configuration, pytest setup, and a minimal passing test.
-- [ ] **M2 — Core framework:** add Playwright fixtures, configuration, and reliable browser lifecycle management.
-- [ ] **M3 — Quality and diagnostics:** add logging, screenshots, traces, and useful failure reporting.
-- [ ] **M4 — Page-object patterns:** validate reusable pages/components against a controlled test application.
-- [ ] **M5 — Retailer adapters:** evaluate permitted integration options before writing any retailer-specific behavior.
-- [ ] **M6 — CI and containers:** run tests in GitHub Actions and optionally Docker.
-- [ ] **M7 — Price-tracking extension:** add a provider-based design only after an approved data source is identified.
+## Run checks
 
-## Development principles
+```powershell
+python -m pytest tests/unit
+python -m pytest tests/e2e
+python -m pytest
+ruff check .
+```
 
-1. Prefer Playwright's auto-waiting and web-first assertions over arbitrary sleeps.
-2. Keep selectors and site-specific assumptions out of shared framework code.
-3. Use environment variables for configuration and secrets; never commit credentials, cookies, or session state.
-4. Make tests deterministic, independent, and safe to rerun.
-5. Capture enough diagnostics to debug a failure without leaking sensitive data.
+Browser tests use the bundled local HTML storefront and do not sign in to retailer sites or place orders. Install the Playwright browser binary before running end-to-end tests.
 
-## Planned tooling
+## Configuration
 
-- Python
-- Playwright for Python
-- pytest
-- pytest-playwright and/or project-owned fixtures, chosen during bootstrap
-- Ruff for linting/formatting
-- GitHub Actions for CI (later milestone)
+Settings are read from environment variables. `.env.example` documents supported values; the project does not automatically load a `.env` file.
 
-Dependency versions and setup commands will be pinned and verified during the bootstrap milestone.
+| Variable | Default | Purpose |
+|---|---|---|
+| `SHOP_SCOPE_ENV` | `local` | Environment label |
+| `SHOP_SCOPE_BROWSER` | `chromium` | Browser: chromium, firefox, or webkit |
+| `SHOP_SCOPE_HEADLESS` | `true` | Set to `false` to show the browser |
+| `SHOP_SCOPE_BASE_URL` | `https://playwright.dev` | Default base URL for future application tests |
+| `SHOP_SCOPE_NAV_TIMEOUT_MS` | `15000` | Navigation timeout in milliseconds |
+| `SHOP_SCOPE_ACTION_TIMEOUT_MS` | `5000` | Action timeout in milliseconds |
+| `SHOP_SCOPE_ARTIFACTS_DIR` | `test-results` | Failure artifact directory |
+
+## Failure artifacts
+
+On browser test failure, the fixture attempts to save a screenshot and Playwright trace in `test-results/`. Open a trace with `python -m playwright show-trace <trace-file>`. Artifacts may contain page content; inspect them before sharing.
+
+## Retailer and price-data boundaries
+
+Amazon India and Flipkart are the intended learning context, not assumed automation targets. Before implementing retailer-specific automation or collecting prices, verify applicable terms and use an approved API, licensed data source, or explicit permission where required.
+
+The project does not implement CAPTCHA evasion, stealth techniques, access-control circumvention, rate-limit bypasses, or real purchases. The provider interface keeps approved data sources separate from browser tests and shared framework code.
 
 ## License
 
-No license has been added yet. Until a license is selected and committed, reuse and redistribution permissions should not be assumed.
+MIT. See [LICENSE](LICENSE).
