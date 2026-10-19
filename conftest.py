@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for browser tests."""
+"""Shared pytest fixtures and diagnostics for browser tests."""
 
 from collections.abc import Generator
 from pathlib import Path
@@ -7,6 +7,9 @@ import pytest
 from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
 
 from shopscope.config import Settings
+
+ROOT = Path(__file__).resolve().parent
+DEMO_STORE = ROOT / "tests" / "fixtures" / "demo_store.html"
 
 
 @pytest.fixture(scope="session")
@@ -23,7 +26,9 @@ def playwright_instance() -> Generator[Playwright, None, None]:
 
 
 @pytest.fixture(scope="session")
-def browser(playwright_instance: Playwright, settings: Settings) -> Generator[Browser, None, None]:
+def browser(
+    playwright_instance: Playwright, settings: Settings
+) -> Generator[Browser, None, None]:
     browser_type = getattr(playwright_instance, settings.browser)
     instance = browser_type.launch(headless=settings.headless)
     yield instance
@@ -38,22 +43,44 @@ def context(browser: Browser) -> Generator[BrowserContext, None, None]:
 
 
 @pytest.fixture
-def page(context: BrowserContext, request: pytest.FixtureRequest, settings: Settings) -> Generator[Page, None, None]:
+def page(
+    context: BrowserContext, request: pytest.FixtureRequest, settings: Settings
+) -> Generator[Page, None, None]:
     current_page = context.new_page()
     current_page.set_default_timeout(settings.action_timeout_ms)
     current_page.set_default_navigation_timeout(settings.navigation_timeout_ms)
+    context.tracing.start(screenshots=True, snapshots=True, sources=True)
     yield current_page
-    if hasattr(request.node, "rep_call") and request.node.rep_call.failed:
+
+    report = getattr(request.node, "rep_call", None)
+    failed = report is not None and report.failed
+    if failed:
         artifacts = Path(settings.artifacts_dir)
         artifacts.mkdir(parents=True, exist_ok=True)
-        safe_name = "".join(c if c.isalnum() or c in "-_" else "_" for c in request.node.nodeid)
-        current_page.screenshot(path=str(artifacts / f"{safe_name}.png"), full_page=True)
-        current_page.context.tracing.stop(path=str(artifacts / f"{safe_name}.zip")) if False else None
+        safe_name = "".join(
+            character if character.isalnum() or character in "-_" else "_"
+            for character in request.node.nodeid
+        )
+        current_page.screenshot(
+            path=str(artifacts / f"{safe_name}.png"),
+            full_page=True,
+        )
+        context.tracing.stop(path=str(artifacts / f"{safe_name}.trace.zip"))
+    else:
+        context.tracing.stop()
     current_page.close()
 
 
+@pytest.fixture
+def demo_store_url() -> str:
+    """Return a file URL for the bundled local storefront."""
+    return DEMO_STORE.as_uri()
+
+
 @pytest.hookimpl(hookwrapper=True)
-def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[object]):
+def pytest_runtest_makereport(
+    item: pytest.Item, call: pytest.CallInfo[object]
+) -> Generator[None, None, None]:
     outcome = yield
     report = outcome.get_result()
     setattr(item, f"rep_{report.when}", report)
