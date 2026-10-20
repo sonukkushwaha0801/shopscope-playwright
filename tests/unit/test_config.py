@@ -1,7 +1,8 @@
+from dataclasses import replace
+
 import pytest
 
 from shopscope.config import Settings
-from dataclasses import replace
 
 
 def test_default_settings_are_valid() -> None:
