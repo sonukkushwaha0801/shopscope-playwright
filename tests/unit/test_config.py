@@ -23,5 +23,5 @@ def test_non_positive_timeout_is_rejected() -> None:
 
 
 def test_base_url_must_be_http_or_https() -> None:
-    with pytest.raises(ValueError, match="http:// or https://"):
+    with pytest.raises(ValueError, match="absolute HTTP or HTTPS URL"):
         replace(Settings(), base_url="file:///tmp/page.html").validate()
