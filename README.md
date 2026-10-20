@@ -1,5 +1,33 @@
 # ShopScope
 
+<p align="center">
+  <img src="assets/shopscope-banner.svg" alt="ShopScope — Explore. Automate. Analyze." width="100%">
+</p>
+
+<p align="center">
+  <strong>Reusable Python · Playwright · pytest</strong><br>
+  E-commerce UI automation framework with a controlled demo storefront and a future provider-based price-tracking extension.
+</p>
+
+<p align="center">
+  <a href="https://github.com/sonukkushwaha0801/shopscope-playwright/actions/workflows/tests.yml"><img alt="Python tests workflow" src="https://github.com/sonukkushwaha0801/shopscope-playwright/actions/workflows/tests.yml/badge.svg?branch=main"></a>
+  <img alt="Python 3.12–3.14" src="https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-3776AB?logo=python&logoColor=white">
+  <img alt="Playwright" src="https://img.shields.io/badge/automation-Playwright-2EAD33?logo=playwright&logoColor=white">
+  <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-blue.svg">
+</p>
+
+## CI result
+
+The latest successful GitHub Actions run confirms the workflow completed successfully. This graphic is a summary visual, not a raw screenshot of the GitHub Actions UI.
+
+<p align="center">
+  <img src="assets/ci-passing.svg" alt="ShopScope CI passing: unit tests, browser tests, and Ruff lint" width="100%">
+</p>
+
+[View the live workflow and run history](https://github.com/sonukkushwaha0801/shopscope-playwright/actions).
+
+---
+
 **Explore. Automate. Analyze.**
 
 A reusable Python Playwright framework for e-commerce UI automation, with a deterministic local demo storefront, a provider interface for future approved integrations, and a price-comparison service.
