@@ -73,7 +73,7 @@ python -m pytest
 ruff check .
 ```
 
-Browser tests use the bundled local HTML storefront and do not sign in to retailer sites or place orders. Install the Playwright browser binary before running end-to-end tests.
+Browser tests use the bundled local HTML storefront and do not sign in to retailer sites or place orders. Install the Playwright browser binary before running end-to-end tests. GitHub Actions also publishes JUnit XML and self-contained HTML test reports as downloadable workflow artifacts (retained for 14 days).
 
 ## Configuration
 
@@ -102,3 +102,7 @@ The project does not implement CAPTCHA evasion, stealth techniques, access-contr
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Project contribution and security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local development checks and [SECURITY.md](SECURITY.md) for safe reporting and artifact-handling guidance.
