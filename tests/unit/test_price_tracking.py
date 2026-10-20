@@ -1,8 +1,7 @@
-from decimal import Decimal
-
 import pytest
 
 from shopscope.tracking.service import PriceTrackingService
+from decimal import Decimal
 
 
 def test_price_decrease_is_detected() -> None:
