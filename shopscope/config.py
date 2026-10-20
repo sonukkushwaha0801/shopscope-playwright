@@ -45,7 +45,7 @@ class Settings:
     artifacts_dir: str = "test-results"
 
     @classmethod
-    def from_env(cls) -> "Settings":
+    def from_env(cls) -> Settings:
         """Build settings from environment variables with safe defaults."""
         return cls(
             environment=os.getenv("SHOP_SCOPE_ENV", "local").strip() or "local",
