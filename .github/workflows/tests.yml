@@ -7,8 +7,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test:
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -28,8 +32,18 @@ jobs:
           python -m pip install -e ".[test,dev]"
           python -m playwright install --with-deps chromium
       - name: Run unit tests
-        run: pytest tests/unit
+        run: |
+          mkdir -p test-results
+          pytest tests/unit --junitxml=test-results/unit-junit.xml --html=test-results/unit-report.html --self-contained-html
       - name: Run browser tests
-        run: pytest tests/e2e
+        run: pytest tests/e2e --junitxml=test-results/e2e-junit.xml --html=test-results/e2e-report.html --self-contained-html
       - name: Lint
         run: ruff check .
+      - name: Upload test reports and failure artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shopscope-test-results-python-${{ matrix.python-version }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 14
