@@ -3,10 +3,10 @@
 from collections.abc import Generator
 from pathlib import Path
 
+from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
 import pytest
 
 from shopscope.config import Settings
-from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
 
 ROOT = Path(__file__).resolve().parent
 DEMO_STORE = ROOT / "tests" / "fixtures" / "demo_store.html"
