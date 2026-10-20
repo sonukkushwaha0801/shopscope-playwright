@@ -4,6 +4,7 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pytest
+from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
 
 from shopscope.config import Settings
 
