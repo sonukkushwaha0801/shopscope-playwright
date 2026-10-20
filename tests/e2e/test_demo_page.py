@@ -1,6 +1,4 @@
 import pytest
-
-from shopscope.pages.demo_store_page import DemoStorePage
 from playwright.sync_api import Page, expect
 
 
