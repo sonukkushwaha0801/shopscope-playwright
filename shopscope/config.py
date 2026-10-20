@@ -1,7 +1,35 @@
-"""Centralized environment configuration."""
+"""Centralized environment configuration with explicit validation."""
+
+from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from urllib.parse import urlsplit
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    """Parse a boolean environment variable without silently accepting typos."""
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    normalized = raw.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"{name} must be a boolean (true/false, 1/0, yes/no, or on/off).")
+
+
+def _env_positive_int(name: str, default: int) -> int:
+    """Parse a positive integer environment variable with a useful error."""
+    raw = os.getenv(name, str(default))
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be an integer; received {raw!r}.") from exc
+    if value <= 0:
+        raise ValueError(f"{name} must be greater than zero.")
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,14 +48,14 @@ class Settings:
     def from_env(cls) -> "Settings":
         """Build settings from environment variables with safe defaults."""
         return cls(
-            environment=os.getenv("SHOP_SCOPE_ENV", "local"),
-            browser=os.getenv("SHOP_SCOPE_BROWSER", "chromium").lower(),
-            headless=os.getenv("SHOP_SCOPE_HEADLESS", "true").strip().lower()
-            in {"1", "true", "yes", "on"},
-            base_url=os.getenv("SHOP_SCOPE_BASE_URL", "https://playwright.dev").rstrip("/"),
-            navigation_timeout_ms=int(os.getenv("SHOP_SCOPE_NAV_TIMEOUT_MS", "15000")),
-            action_timeout_ms=int(os.getenv("SHOP_SCOPE_ACTION_TIMEOUT_MS", "5000")),
-            artifacts_dir=os.getenv("SHOP_SCOPE_ARTIFACTS_DIR", "test-results"),
+            environment=os.getenv("SHOP_SCOPE_ENV", "local").strip() or "local",
+            browser=os.getenv("SHOP_SCOPE_BROWSER", "chromium").strip().lower(),
+            headless=_env_bool("SHOP_SCOPE_HEADLESS", True),
+            base_url=os.getenv("SHOP_SCOPE_BASE_URL", "https://playwright.dev").strip().rstrip("/"),
+            navigation_timeout_ms=_env_positive_int("SHOP_SCOPE_NAV_TIMEOUT_MS", 15_000),
+            action_timeout_ms=_env_positive_int("SHOP_SCOPE_ACTION_TIMEOUT_MS", 5_000),
+            artifacts_dir=os.getenv("SHOP_SCOPE_ARTIFACTS_DIR", "test-results").strip()
+            or "test-results",
         )
 
     def validate(self) -> None:
@@ -38,5 +66,8 @@ class Settings:
             )
         if self.navigation_timeout_ms <= 0 or self.action_timeout_ms <= 0:
             raise ValueError("Timeout values must be positive.")
-        if not self.base_url.startswith(("http://", "https://")):
-            raise ValueError("SHOP_SCOPE_BASE_URL must start with http:// or https://.")
+        parsed_url = urlsplit(self.base_url)
+        if parsed_url.scheme not in {"http", "https"} or not parsed_url.hostname:
+            raise ValueError(
+                "SHOP_SCOPE_BASE_URL must be an absolute HTTP or HTTPS URL with a hostname."
+            )
